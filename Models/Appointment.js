@@ -11,6 +11,7 @@ const AppointmentSchema = new Schema({
   patient_name: reqStr,
   doctorId: { type: mongoose.Types.ObjectId, ref: "Doctor" },
   doctor_name: reqStr,
+  time_slot: reqStr,
   consult_type: {
     type: Number,
     enum: [1, 2], // 1: Online, 2: Physical

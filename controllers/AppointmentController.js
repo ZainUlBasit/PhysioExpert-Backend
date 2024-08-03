@@ -1,5 +1,33 @@
+const dayjs = require("dayjs");
 const Appointment = require("../Models/Appointment");
+const Doctor = require("../Models/Doctor");
 const { successMessage, createError } = require("../utils/ResponseMessage");
+
+// Generate time slots with a 30-minute gap
+const generateTimeSlots = (selectedDaySlots) => {
+  const slots = [];
+  let currentTime = dayjs(selectedDaySlots.from, "HH:mm");
+
+  const endTime = dayjs(selectedDaySlots.to, "HH:mm");
+
+  console.log(
+    `Generating time slots from ${selectedDaySlots.from} to ${selectedDaySlots.to}`
+  );
+
+  while (currentTime.isBefore(endTime)) {
+    const nextTime = currentTime.add(30, "minute");
+    slots.push(`${currentTime.format("HH:mm")} - ${nextTime.format("HH:mm")}`);
+    console.log(
+      `Generated slot: ${currentTime.format("HH:mm")} - ${nextTime.format(
+        "HH:mm"
+      )}`
+    );
+    currentTime = nextTime;
+  }
+
+  console.log(`All generated slots: ${slots}`);
+  return slots;
+};
 
 // Get all appointments by patient or doctor ID
 const getAllAppointmentsById = async (req, res) => {
@@ -44,6 +72,34 @@ const getAllAppointmentsById = async (req, res) => {
   }
 };
 
+const checkSlot = async (req, res) => {
+  try {
+    const { doctorId, date, slots, available } = req.body;
+    if (!available) return createError(res, 400, "Not Available");
+    const timestampDate = dayjs(date).startOf("day").unix();
+    const filterSlots = await Promise.all(
+      slots.map(async (dt) => {
+        const appointment = await Appointment.exists({
+          doctorId,
+          time_slot: dt,
+          date: timestampDate,
+        });
+        if (!appointment) return dt;
+      })
+    );
+
+    return successMessage(
+      res,
+      filterSlots.filter((dt) => dt),
+      "Appointments retrieved successfully"
+    );
+  } catch (error) {
+    console.log(error);
+    return createError(res, 400, error.message);
+  }
+};
+
 module.exports = {
   getAllAppointmentsById,
+  checkSlot,
 };

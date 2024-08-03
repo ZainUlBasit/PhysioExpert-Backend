@@ -5,6 +5,7 @@ const Patient = require("../Models/Patient");
 const Appointment = require("../Models/Appointment");
 const Doctor = require("../Models/Doctor");
 const Prescription = require("../Models/Prescription");
+const User = require("../Models/User");
 
 const productOrderController = {
   // Create a new ProductOrder
@@ -124,6 +125,7 @@ const productOrderController = {
               doctorId,
               date,
               consult_type,
+              time_slot,
             } = req.body;
             if (
               !name ||
@@ -132,6 +134,7 @@ const productOrderController = {
               !imageUrl ||
               !gender ||
               !age ||
+              !time_slot ||
               !doctorId ||
               !address
             ) {
@@ -150,6 +153,22 @@ const productOrderController = {
                 return createError(res, 404, "Invalid ID Doctor not found!");
               }
 
+              if (req.body.time_slot) {
+                const app_exists = await Appointment.exists({
+                  doctorId: doctor._id,
+                  time_slot,
+                });
+                if (app_exists) {
+                  return createError(
+                    res,
+                    400,
+                    "Selected time slot already reserved!"
+                  );
+                }
+              } else {
+                return createError(res, 422, "Time slot is required!");
+              }
+
               const addPrescription = await Prescription({
                 history_complaints: "",
                 assessment: "",
@@ -162,6 +181,7 @@ const productOrderController = {
 
               await addPrescription.save();
               const addAppointment = await Appointment({
+                time_slot,
                 patientId: patient._id,
                 doctorId: doctor._id,
                 patient_name: patient.name,
@@ -198,6 +218,7 @@ const productOrderController = {
               doctorId,
               date,
               consult_type,
+              time_slot,
             } = req.body;
             if (
               !name ||
@@ -207,6 +228,7 @@ const productOrderController = {
               !gender ||
               !age ||
               !doctorId ||
+              !time_slot ||
               !address
             ) {
               return createError(res, 422, "Required field are undefined!");
@@ -248,11 +270,12 @@ const productOrderController = {
               await addPrescription.save();
 
               const addAppointment = await Appointment({
+                time_slot,
                 patientId: addPatient._id,
                 doctorId: doctor._id,
                 patient_name: addPatient.name,
                 doctor_name: doctor.name,
-                consult_type: req.body.consult_type,
+                consult_type: consult_type,
                 date: Math.floor(new Date(date) / 1000),
                 prescription: addPrescription._id,
               });
@@ -268,6 +291,7 @@ const productOrderController = {
               } else return createError(res, 400, "Unable to add Appointment!");
             }
           } catch (error) {
+            console.log(error);
             return createError(res, 400, error.message);
           }
         }
@@ -284,6 +308,7 @@ const productOrderController = {
             patientId,
             doctorId,
             date,
+            time_slot,
           } = req.body;
           if (
             !name ||
@@ -293,6 +318,7 @@ const productOrderController = {
             !gender ||
             !age ||
             !doctorId ||
+            !time_slot ||
             !address
           ) {
             return createError(res, 422, "Required field are undefined!");
@@ -322,6 +348,7 @@ const productOrderController = {
             await addPrescription.save();
 
             const addAppointment = await Appointment({
+              time_slot,
               patientId: patient._id,
               doctorId: doctor._id,
               patient_name: patient.name,

@@ -5,6 +5,7 @@ const User = require("../Models/User");
 const Doctor = require("../Models/Doctor");
 const Appointment = require("../Models/Appointment");
 const Prescription = require("../Models/Prescription");
+const dayjs = require("dayjs");
 
 // Define the Joi schema for validation
 const patientSchema = Joi.object({
@@ -104,6 +105,7 @@ const placePatientAppointment = async (req, res) => {
       doctorId,
       date,
       consult_type,
+      time_slot,
     } = req.body;
     if (
       !doctorId ||
@@ -111,7 +113,8 @@ const placePatientAppointment = async (req, res) => {
       !doctor_name ||
       !patient_name ||
       !date ||
-      !consult_type
+      !consult_type ||
+      !time_slot
     ) {
       return createError(res, 422, "Required field are undefined!");
     } else {
@@ -125,6 +128,7 @@ const placePatientAppointment = async (req, res) => {
       if (!doctor) {
         return createError(res, 404, "Invalid ID Doctor not found!");
       }
+      const startOfDayTimestamp = dayjs(date).startOf("da y").unix();
 
       const addPrescription = await Prescription({
         history_complaints: "",
@@ -133,7 +137,7 @@ const placePatientAppointment = async (req, res) => {
         management: "",
         remarks: "",
         exercises: [""],
-        date: Math.floor(new Date(date) / 1000),
+        date: startOfDayTimestamp,
       });
       await addPrescription.save();
 
@@ -143,8 +147,9 @@ const placePatientAppointment = async (req, res) => {
         patient_name: patient_name,
         doctor_name: doctor_name,
         consult_type,
-        date: Math.floor(new Date(date) / 1000),
+        date: startOfDayTimestamp,
         prescription: addPrescription._id,
+        time_slot: time_slot,
       });
 
       await addAppointment.save();
@@ -158,6 +163,7 @@ const placePatientAppointment = async (req, res) => {
       } else return createError(res, 400, "Unable to add Appointment!");
     }
   } catch (error) {
+    console.log(error);
     return createError(res, 400, { error: error.message });
   }
 };
