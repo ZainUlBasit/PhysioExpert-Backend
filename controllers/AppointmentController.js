@@ -2,6 +2,7 @@ const dayjs = require("dayjs");
 const Appointment = require("../Models/Appointment");
 const Doctor = require("../Models/Doctor");
 const { successMessage, createError } = require("../utils/ResponseMessage");
+const Prescription = require("../Models/Prescription");
 
 // Generate time slots with a 30-minute gap
 const generateTimeSlots = (selectedDaySlots) => {
@@ -99,7 +100,32 @@ const checkSlot = async (req, res) => {
   }
 };
 
+const UpdatePrescription = async (req, res) => {
+  const { id, payload } = req.body;
+  if (!id || !payload) {
+    return createError(res, 422, "Required fields are undefined!");
+  }
+  try {
+    const updatedPrescription = await Prescription.findByIdAndUpdate(
+      id,
+      payload,
+      { new: true }
+    );
+    if (!updatedPrescription) {
+      return createError(res, 404, "Prescription not found");
+    }
+    return successMessage(
+      res,
+      updatedPrescription,
+      "Prescription updated successfully"
+    );
+  } catch (err) {}
+
+  return createError(res, 400, "");
+};
+
 module.exports = {
   getAllAppointmentsById,
   checkSlot,
+  UpdatePrescription,
 };

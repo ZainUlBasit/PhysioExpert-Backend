@@ -6,6 +6,7 @@ const Doctor = require("../Models/Doctor");
 const Appointment = require("../Models/Appointment");
 const Prescription = require("../Models/Prescription");
 const dayjs = require("dayjs");
+const Contacts = require("../Models/Contacts");
 
 // Define the Joi schema for validation
 const patientSchema = Joi.object({
@@ -140,6 +141,13 @@ const placePatientAppointment = async (req, res) => {
         date: startOfDayTimestamp,
       });
       await addPrescription.save();
+
+      const existingContact = await Contacts.findOne({ patientId, doctorId });
+      if (!existingContact) {
+        const newContact = new Contacts({ patientId, doctorId });
+        await newContact.save();
+        if (!newContact) return createError(res, 400, "Unable to add contact!");
+      }
 
       const addAppointment = await Appointment({
         patientId: patientId,

@@ -6,6 +6,7 @@ const Appointment = require("../Models/Appointment");
 const Doctor = require("../Models/Doctor");
 const Prescription = require("../Models/Prescription");
 const User = require("../Models/User");
+const Contacts = require("../Models/Contacts");
 
 const productOrderController = {
   // Create a new ProductOrder
@@ -180,6 +181,21 @@ const productOrderController = {
               });
 
               await addPrescription.save();
+
+              const existingContact = await Contacts.findOne({
+                patientId: patient._id,
+                doctorId: doctor._id,
+              });
+              if (!existingContact) {
+                const newContact = new Contacts({
+                  patientId: patient._id,
+                  doctorId: doctor._id,
+                });
+                await newContact.save();
+                if (!newContact)
+                  return createError(res, 400, "Unable to add contact!");
+              }
+
               const addAppointment = await Appointment({
                 time_slot,
                 patientId: patient._id,
@@ -269,6 +285,20 @@ const productOrderController = {
 
               await addPrescription.save();
 
+              const existingContact = await Contacts.findOne({
+                patientId: addPatient._id,
+                doctorId: doctor._id,
+              });
+              if (!existingContact) {
+                const newContact = new Contacts({
+                  patientId: addPatient._id,
+                  doctorId: doctor._id,
+                });
+                await newContact.save();
+                if (!newContact)
+                  return createError(res, 400, "Unable to add contact!");
+              }
+
               const addAppointment = await Appointment({
                 time_slot,
                 patientId: addPatient._id,
@@ -346,6 +376,20 @@ const productOrderController = {
             });
 
             await addPrescription.save();
+
+            const existingContact = await Contacts.findOne({
+              patientId: patient._id,
+              doctorId: doctor._id,
+            });
+            if (!existingContact) {
+              const newContact = new Contacts({
+                patientId: patient._id,
+                doctorId: doctor._id,
+              });
+              await newContact.save();
+              if (!newContact)
+                return createError(res, 400, "Unable to add contact!");
+            }
 
             const addAppointment = await Appointment({
               time_slot,
