@@ -20,6 +20,7 @@ const ContactRoutes = require("./routes/contact.routes"); // Adjust the path acc
 const AppointmentRoutes = require("./routes/appointment.routes"); // Adjust the path according to your file structure
 const CategoryRoutes = require("./routes/category.routes"); // Adjust the path according to your file structure
 const ExerciseRoutes = require("./routes/exercise.routes"); // Adjust the path according to your file structure
+const StatsRoutes = require("./routes/stats.routes"); // Adjust the path according to your file structure
 const { default: mongoose } = require("mongoose");
 
 const PORT = process.env.PORT;
@@ -135,6 +136,7 @@ app.use("/api/contacts", ContactRoutes);
 app.use("/api/appointment", AppointmentRoutes);
 app.use("/api/category", CategoryRoutes);
 app.use("/api/exercise", ExerciseRoutes);
+app.use("/api/stats", StatsRoutes);
 
 app.use("*", (req, res) => res.status(404).send("Not Found!"));
 app.use((req, res, error) => {
