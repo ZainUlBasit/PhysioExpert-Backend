@@ -13,6 +13,7 @@ const PrescriptionSchema = new Schema({
   management: String,
   remarks: String,
   exercises: [String],
+  videos: [String],
   date: { type: Number, default: Math.floor(Date.now() / 1000) },
 });
 
