@@ -150,6 +150,7 @@ const placePatientAppointment = async (req, res) => {
       }
 
       const addAppointment = await Appointment({
+        status: 1,
         patientId: patientId,
         doctorId: doctorId,
         patient_name: patient_name,

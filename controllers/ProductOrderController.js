@@ -197,6 +197,7 @@ const productOrderController = {
               }
 
               const addAppointment = await Appointment({
+                status: 1,
                 time_slot,
                 patientId: patient._id,
                 doctorId: doctor._id,
@@ -300,6 +301,7 @@ const productOrderController = {
               }
 
               const addAppointment = await Appointment({
+                status: 1,
                 time_slot,
                 patientId: addPatient._id,
                 doctorId: doctor._id,
@@ -392,6 +394,7 @@ const productOrderController = {
             }
 
             const addAppointment = await Appointment({
+              status: 1,
               time_slot,
               patientId: patient._id,
               doctorId: doctor._id,
