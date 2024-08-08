@@ -223,6 +223,7 @@ function authControllers() {
             imageUrl,
             gender,
             address,
+            desc,
           } = req.body;
           if (
             !name ||
@@ -231,12 +232,14 @@ function authControllers() {
             !mobile_no ||
             !imageUrl ||
             !gender ||
+            !desc ||
             !address
           ) {
             return createError(res, 422, "Required field are undefined!");
           } else {
             const addDoctor = new Doctor({
               name,
+              desc,
               imageUrl,
               address,
               gender,

@@ -177,6 +177,48 @@ const placePatientAppointment = async (req, res) => {
   }
 };
 
+const getPatientExercises = async (req, res) => {
+  const { id: patientId } = req.params;
+  console.log(patientId);
+  if (!patientId) {
+    return createError(res, 422, "Required fields are undefined!");
+  }
+  try {
+    const patient = await Appointment.find({ patientId }).populate(
+      "prescription"
+    );
+
+    if (!patient) {
+      return createError(res, 404, "Patient not found");
+    }
+
+    let allVideos = [];
+    let allExercises = [];
+
+    patient.forEach((dt) => {
+      // Check if dt.prescription is an array
+      if (Array.isArray(dt.prescription)) {
+        dt.prescription.forEach((pres) => {
+          allVideos = [...allVideos, ...(pres.videos || [])];
+          allExercises = [...allExercises, ...(pres.exercises || [])];
+        });
+      } else if (dt.prescription) {
+        // If dt.prescription is not an array but exists, handle it
+        allVideos = [...allVideos, ...(dt.prescription.videos || [])];
+        allExercises = [...allExercises, ...(dt.prescription.exercises || [])];
+      }
+    });
+
+    return successMessage(
+      res,
+      { videos: allVideos, exercises: allExercises },
+      "Patient retrieved successfully"
+    );
+  } catch (error) {
+    return createError(res, 400, error.message);
+  }
+};
+
 module.exports = {
   placePatientAppointment,
   createPatient,
@@ -184,4 +226,5 @@ module.exports = {
   getPatientById,
   updatePatient,
   deletePatient,
+  getPatientExercises,
 };
