@@ -5,5 +5,6 @@ const router = require("express").Router();
 router.post("/get", AppointmentController.getAllAppointmentsById);
 router.post("/available_slots", AppointmentController.checkSlot);
 router.patch("/update_prescription", AppointmentController.UpdatePrescription);
+router.patch("/status", AppointmentController.UpdateStatus);
 
 module.exports = router;

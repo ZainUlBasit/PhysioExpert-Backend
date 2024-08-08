@@ -101,11 +101,19 @@ const checkSlot = async (req, res) => {
 };
 
 const UpdatePrescription = async (req, res) => {
-  const { id, payload } = req.body;
+  const { id, app_id, payload } = req.body;
   if (!id || !payload) {
     return createError(res, 422, "Required fields are undefined!");
   }
   try {
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      app_id,
+      { status: 2 },
+      { new: true }
+    );
+    if (!updatedAppointment) {
+      return createError(res, 404, "Appointment not found");
+    }
     const updatedPrescription = await Prescription.findByIdAndUpdate(
       id,
       payload,
@@ -123,9 +131,33 @@ const UpdatePrescription = async (req, res) => {
 
   return createError(res, 400, "");
 };
+const UpdateStatus = async (req, res) => {
+  const { id, status } = req.body;
+  if (!id || !payload) {
+    return createError(res, 422, "Required fields are undefined!");
+  }
+  try {
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      id,
+      { status: status },
+      { new: true }
+    );
+    if (!updatedAppointment) {
+      return createError(res, 404, "Appointment not found");
+    }
+    return successMessage(
+      res,
+      updatedAppointment,
+      "Appointment updated successfully"
+    );
+  } catch (err) {}
+
+  return createError(res, 400, "");
+};
 
 module.exports = {
   getAllAppointmentsById,
   checkSlot,
   UpdatePrescription,
+  UpdateStatus,
 };
