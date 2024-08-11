@@ -34,12 +34,12 @@ const sendMessage = async (req, res) => {
     }
     patientAccount.Chats.push(AddChat._id);
     await patientAccount.save();
-    if (sender === 1) {
+    if (sender === 2) {
       io.to("/doctor-" + doctorId).emit(
         "recieve-message",
         "New Message Recieved!"
       );
-    } else if (sender === 2) {
+    } else if (sender === 1) {
       io.to("/patient-" + patientId).emit(
         "recieve-message",
         "New Message Recieved!"
