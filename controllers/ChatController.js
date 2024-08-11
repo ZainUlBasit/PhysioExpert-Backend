@@ -19,6 +19,8 @@ const sendMessage = async (req, res) => {
     });
     await AddChat.save();
 
+    const io = req?.app?.io;
+
     const doctorAccount = await Doctor.findById(doctorId);
     if (!doctorAccount.Chats) {
       doctorAccount.Chats = [];
@@ -32,6 +34,17 @@ const sendMessage = async (req, res) => {
     }
     patientAccount.Chats.push(AddChat._id);
     await patientAccount.save();
+    if (sender === 1) {
+      io.to("/doctor-" + doctorId).emit(
+        "recieve-message",
+        "New Message Recieved!"
+      );
+    } else if (sender === 2) {
+      io.to("/patient-" + patientId).emit(
+        "recieve-message",
+        "New Message Recieved!"
+      );
+    }
     return successMessage(
       res,
       {
