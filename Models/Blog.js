@@ -9,6 +9,7 @@ const reqStr = {
 const BlogSchema = new Schema({
   title: reqStr,
   imageUrl: reqStr,
+  desc: reqStr,
   date: {
     type: Number,
     required: true,

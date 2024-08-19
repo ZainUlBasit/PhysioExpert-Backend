@@ -3,11 +3,12 @@ const { createError, successMessage } = require("../utils/ResponseMessage"); // 
 
 // Create a new blog
 const createBlog = async (req, res) => {
-  const { title, imageUrl, date } = req.body;
+  const { title, imageUrl, date, desc } = req.body;
   try {
     const newBlog = new Blog({
       title,
       imageUrl,
+      desc,
       date: Math.floor(new Date(date) / 1000),
     });
     const savedBlog = await newBlog.save();
