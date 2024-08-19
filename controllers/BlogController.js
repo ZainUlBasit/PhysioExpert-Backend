@@ -49,8 +49,8 @@ const updateBlog = async (req, res) => {
   try {
     const updatedBlog = await Blog.findByIdAndUpdate(
       id,
-      { title, imageUrl, date: Math.floor(new Date(date) / 1000) },
-      desc,
+      { title, imageUrl, date: Math.floor(new Date(date) / 1000), desc },
+
       { new: true }
     );
     if (!updatedBlog) {
