@@ -45,11 +45,12 @@ const getBlogById = async (req, res) => {
 // Update a blog by ID
 const updateBlog = async (req, res) => {
   const { id } = req.params;
-  const { title, imageUrl, date } = req.body;
+  const { title, imageUrl, date, desc } = req.body;
   try {
     const updatedBlog = await Blog.findByIdAndUpdate(
       id,
       { title, imageUrl, date: Math.floor(new Date(date) / 1000) },
+      desc,
       { new: true }
     );
     if (!updatedBlog) {
