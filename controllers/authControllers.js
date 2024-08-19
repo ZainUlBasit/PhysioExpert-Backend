@@ -238,6 +238,7 @@ function authControllers() {
             return createError(res, 422, "Required field are undefined!");
           } else {
             const addDoctor = new Doctor({
+              docUrl: req.body.docUrl,
               name,
               desc,
               imageUrl,
