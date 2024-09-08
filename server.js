@@ -81,7 +81,13 @@ app.use(function (req, res, next) {
 
 // socket io functionalities;
 
-const io = new Server(server, { cors: { origin: true } }); // socket io server!
+const io = new Server(server, {
+  cors: {
+    origin: "https://physio-experts.vercel.app", // Specify the allowed origin
+    methods: ["GET", "POST", "PATCH", "DELETE"], // Define allowed methods
+    credentials: true, // Allow credentials if necessary
+  },
+}); // socket io server!
 // const io = require("socket.io").
 app.io = io;
 app.set("io", io);
