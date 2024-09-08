@@ -36,7 +36,7 @@ const sendMessage = async (req, res) => {
     await patientAccount.save();
     if (io) {
       // console.log("yes");
-      if (sender === 2) {
+      if (sender === 1) {
         const doctorRoom = `/doctor-${doctorId}`;
         console.log(`Emitting message to room: ${doctorRoom}`);
         io.to(doctorRoom).emit("receive-message", {
@@ -44,7 +44,7 @@ const sendMessage = async (req, res) => {
           data: AddChat,
         });
       }
-      if (sender === 1) {
+      if (sender === 2) {
         const patientRoom = `/patient-${patientId}`;
         console.log(`Emitting message to room: ${patientRoom}`);
         io.to(patientRoom).emit("receive-message", {
