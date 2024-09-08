@@ -35,23 +35,23 @@ const sendMessage = async (req, res) => {
     patientAccount.Chats.push(AddChat._id);
     await patientAccount.save();
     if (io) {
-      console.log("yes");
-      // if (sender === 1) {
-      //   const doctorRoom = `/doctor-${doctorId}`;
-      //   console.log(`Emitting message to room: ${doctorRoom}`);
-      //   io.to(doctorRoom).emit("doctor-receive-message", {
-      //     message: "New message received from patient!",
-      //     data: AddChat,
-      //   });
-      // }
-      // if (sender === 1) {
-      //   const patientRoom = `/patient-${patientId}`;
-      //   console.log(`Emitting message to room: ${patientRoom}`);
-      //   io.to(patientRoom).emit("patient-receive-message", {
-      //     message: "New message received from doctor!",
-      //     data: AddChat,
-      //   });
-      // }
+      // console.log("yes");
+      if (sender === 2) {
+        const doctorRoom = `/doctor-${doctorId}`;
+        console.log(`Emitting message to room: ${doctorRoom}`);
+        io.to(doctorRoom).emit("doctor-receive-message", {
+          message: "New message received from patient!",
+          data: AddChat,
+        });
+      }
+      if (sender === 1) {
+        const patientRoom = `/patient-${patientId}`;
+        console.log(`Emitting message to room: ${patientRoom}`);
+        io.to(patientRoom).emit("patient-receive-message", {
+          message: "New message received from doctor!",
+          data: AddChat,
+        });
+      }
     } else {
       return createError(res, 500, "Socket.io is not initialized");
     }
