@@ -100,11 +100,21 @@ io.on("connection", (socket) => {
   console.log("connection established!");
   try {
     const { secretkey, token } = socket.handshake.headers;
-    console.log(token);
-    console.log(ACCESS_SECRET_KEY);
-    const { _doc: user } = jwt.verify(token, ACCESS_SECRET_KEY);
-    if (secretkey != SOCKET_SECRET_KEY || !token || !user)
+    console.log("Received token:", token);
+
+    if (!secretkey || !token) {
+      console.log("Missing secret key or token");
       return socket.disconnect();
+    }
+
+    const decoded = jwt.verify(token, ACCESS_SECRET_KEY);
+    const user = decoded._doc || decoded; // Handle different token structures
+
+    if (secretkey !== SOCKET_SECRET_KEY || !user) {
+      console.log("Invalid secret key or token");
+      return socket.disconnect();
+    }
+
     switch (user.role) {
       case 1:
         console.log("===============Admin SOCKET JOINED==============");
