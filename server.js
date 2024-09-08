@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-// const {ConnectionOptions} = require("mongoose");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
@@ -13,22 +12,20 @@ const DoctorRoutes = require("./routes/doctor.routes");
 const PatientRoutes = require("./routes/patient.routes");
 const ProductRoutes = require("./routes/product.routes");
 const ProductOrderRoutes = require("./routes/product.order.routes");
-const BlogRoutes = require("./routes/blogs.routes"); // Adjust the path according to your file structure
-const ServicesRoutes = require("./routes/service.routes"); // Adjust the path according to your file structure
-const ChatRoutes = require("./routes/chat.routes"); // Adjust the path according to your file structure
-const ContactRoutes = require("./routes/contact.routes"); // Adjust the path according to your file structure
-const AppointmentRoutes = require("./routes/appointment.routes"); // Adjust the path according to your file structure
-const CategoryRoutes = require("./routes/category.routes"); // Adjust the path according to your file structure
-const ExerciseRoutes = require("./routes/exercise.routes"); // Adjust the path according to your file structure
-const StatsRoutes = require("./routes/stats.routes"); // Adjust the path according to your file structure
+const BlogRoutes = require("./routes/blogs.routes");
+const ServicesRoutes = require("./routes/service.routes");
+const ChatRoutes = require("./routes/chat.routes");
+const ContactRoutes = require("./routes/contact.routes");
+const AppointmentRoutes = require("./routes/appointment.routes");
+const CategoryRoutes = require("./routes/category.routes");
+const ExerciseRoutes = require("./routes/exercise.routes");
+const StatsRoutes = require("./routes/stats.routes");
 const { default: mongoose } = require("mongoose");
 
 const PORT = process.env.PORT;
 const SOCKET_SECRET_KEY = process.env.SOCKET_SECRET_KEY;
 const ACCESS_SECRET_KEY = process.env.ACCESS_SECRET_KEY;
-const ExactHostname = "http://localhost:5174";
-// "http://localhost:5173";
-// "https://65842b8f7e948fe879d031cd--golden-pony-e53c7a.netlify.app";
+const mongooseUrl = process.env.mongooseUrl;
 
 const app = express();
 const server = http.createServer(app);
@@ -37,40 +34,27 @@ app.use(cookieParser());
 app.use(express.json());
 
 mongoose
-  .connect(process.env.mongooseUrl, {
+  .connect(mongooseUrl, {
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log("database connected");
+    console.log("Database connected");
   })
   .catch((err) => {
-    console.log(err);
+    console.error("Database connection error:", err);
   });
 
+// CORS configuration for HTTP requests
 app.use(
   cors({
-    origin: true,
-    credentials: true,
+    origin: ["https://physio-experts.vercel.app"], // Frontend domain
+    credentials: true, // Allow cookies and credentials
   })
 );
 
-// app.use((req, res, next) => {
-//   // res.header('Access-Control-Allow-Origin', "*");
-//   // res.header('Access-Control-Allow-Credentials', true);
-//   // res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-//   const app_secret = req?.headers["app_secret"];
-//   const token = req.query?.token;
-//   console.log("app_secret : ", app_secret);
-//   if (token != PAYPAL_TOKEN && app_secret != APP_ID)
-//     return createError(res, 401, "App is Unauthorized!");
-//   // const app_id = jwt.verify(app_secret, PRIVATE_KEY)
-//   // CODE SHOULD BE CONTINUED : ONLY APP_ID IS LEFT AND THEN JWT TOKEN CREATION IS TO BE DONE
-//   next();
-// });
-// we should have cors object specified here,
-
-app.use(function (req, res, next) {
-  console.log(req.originalUrl);
+// Log requests for debugging
+app.use((req, res, next) => {
+  console.log("Request URL:", req.originalUrl);
   res.header("Access-Control-Allow-Credentials", true);
   res.header(
     "Access-Control-Allow-Headers",
@@ -79,51 +63,56 @@ app.use(function (req, res, next) {
   next();
 });
 
-// socket io functionalities;
+// Socket.io setup with CORS configuration
+const io = new Server(server, {
+  cors: {
+    origin: ["https://physio-experts.vercel.app"], // Frontend domain
+    methods: ["GET", "POST"],
+    credentials: true, // Allow credentials
+    maxHttpBufferSize: 1e6, // Set buffer limit if needed
+  },
+});
 
-const io = new Server(server, { cors: { origin: true } }); // socket io server!
-// const io = require("socket.io").
 app.io = io;
 app.set("io", io);
 global.io = io;
 
-function socketEmit(socket, event, data) {
-  socket.emit(event, data);
-}
+// Socket.io connection handling with JWT authentication via socket.auth
 io.on("connection", (socket) => {
-  console.log("connection established!");
+  console.log("Socket connection established");
+
   try {
-    const { secretkey, token } = socket.handshake.headers;
-    const { _doc: user } = jwt.verify(token, ACCESS_SECRET_KEY);
-    console.log(secretkey);
-    console.log(token);
-    if (secretkey != SOCKET_SECRET_KEY || !token || !user)
-      return socket.disconnect();
+    const token = socket.handshake.auth.token; // JWT token passed via auth
+    const user = jwt.verify(token, ACCESS_SECRET_KEY);
+
+    if (!user) return socket.disconnect();
+
+    // Join rooms based on user role
     switch (user.role) {
       case 1:
-        console.log("===============Admin SOCKET JOINED==============");
-        socket.join(["/admin-" + user._id]);
+        console.log("Admin socket joined");
+        socket.join(`/admin-${user._id}`);
         break;
       case 2:
-        console.log("===============Doctor SOCKET JOINED==============");
-        socket.join(["/doctor-" + user.doctorId._id]);
+        console.log("Doctor socket joined");
+        socket.join(`/doctor-${user.doctorId._id}`);
         break;
       case 3:
-        console.log("===============Patient SOCKET JOINED==============");
-        socket.join(["/patient-" + user.patientId._id]);
+        console.log("Patient socket joined");
+        socket.join(`/patient-${user.patientId._id}`);
         break;
-
       default:
-        console.log("no other then company room joined!");
+        console.log("Visitor socket joined");
         socket.join(`/visitor`);
         break;
     }
   } catch (error) {
-    console.log("SOCKET ERROR");
-    console.log(error);
+    console.error("Socket authentication error:", error);
+    socket.disconnect();
   }
 });
 
+// Routes
 app.use("/api/auth", AuthRoutes);
 app.use("/api/doctor", DoctorRoutes);
 app.use("/api/patient", PatientRoutes);
@@ -138,17 +127,22 @@ app.use("/api/category", CategoryRoutes);
 app.use("/api/exercise", ExerciseRoutes);
 app.use("/api/stats", StatsRoutes);
 
+// 404 route
 app.use("*", (req, res) => res.status(404).send("Not Found!"));
-app.use((req, res, error) => {
-  console.log(error);
+
+// Global error handler
+app.use((error, req, res, next) => {
+  console.error("Error:", error);
   res.status(400).json({ success: false, error });
 });
 
-server.listen(PORT, async (error) => {
-  if (error) return console.log("SERVER_CONNECTION ERROR", error);
-  console.log("Server connected on ", PORT);
+// Start server
+server.listen(PORT, (error) => {
+  if (error) return console.error("Server connection error:", error);
+  console.log(`Server connected on port ${PORT}`);
 });
 
+// Export io for external usage
 module.exports = {
   io: io,
 };
