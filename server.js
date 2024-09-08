@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-// const {ConnectionOptions} = require("mongoose");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
@@ -13,26 +12,24 @@ const DoctorRoutes = require("./routes/doctor.routes");
 const PatientRoutes = require("./routes/patient.routes");
 const ProductRoutes = require("./routes/product.routes");
 const ProductOrderRoutes = require("./routes/product.order.routes");
-const BlogRoutes = require("./routes/blogs.routes"); // Adjust the path according to your file structure
-const ServicesRoutes = require("./routes/service.routes"); // Adjust the path according to your file structure
-const ChatRoutes = require("./routes/chat.routes"); // Adjust the path according to your file structure
-const ContactRoutes = require("./routes/contact.routes"); // Adjust the path according to your file structure
-const AppointmentRoutes = require("./routes/appointment.routes"); // Adjust the path according to your file structure
-const CategoryRoutes = require("./routes/category.routes"); // Adjust the path according to your file structure
-const ExerciseRoutes = require("./routes/exercise.routes"); // Adjust the path according to your file structure
-const StatsRoutes = require("./routes/stats.routes"); // Adjust the path according to your file structure
+const BlogRoutes = require("./routes/blogs.routes");
+const ServicesRoutes = require("./routes/service.routes");
+const ChatRoutes = require("./routes/chat.routes");
+const ContactRoutes = require("./routes/contact.routes");
+const AppointmentRoutes = require("./routes/appointment.routes");
+const CategoryRoutes = require("./routes/category.routes");
+const ExerciseRoutes = require("./routes/exercise.routes");
+const StatsRoutes = require("./routes/stats.routes");
 const { default: mongoose } = require("mongoose");
 
 const PORT = process.env.PORT;
 const SOCKET_SECRET_KEY = process.env.SOCKET_SECRET_KEY;
 const ACCESS_SECRET_KEY = process.env.ACCESS_SECRET_KEY;
-const ExactHostname = "http://localhost:5174";
-// "http://localhost:5173";
-// "https://65842b8f7e948fe879d031cd--golden-pony-e53c7a.netlify.app";
 
 const app = express();
 const server = http.createServer(app);
 
+// Middleware setup
 app.use(cookieParser());
 app.use(express.json());
 
@@ -41,64 +38,60 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log("database connected");
+    console.log("Database connected");
   })
   .catch((err) => {
     console.log(err);
   });
 
+// CORS setup for Express.js
 app.use(
   cors({
-    origin: "https://physio-experts.vercel.app",
-    credentials: true,
+    origin: "https://physio-experts.vercel.app", // Frontend URL
+    credentials: true, // Allow credentials such as cookies
+    methods: ["GET", "POST", "PATCH", "DELETE"], // Allowed methods
+    allowedHeaders: ["Authorization", "Content-Type", "secretkey", "token"], // Allowed headers
+    exposedHeaders: ["Access-Control-Allow-Origin"], // Exposed headers
   })
 );
 
-// app.use((req, res, next) => {
-//   // res.header('Access-Control-Allow-Origin', "*");
-//   // res.header('Access-Control-Allow-Credentials', true);
-//   // res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-//   const app_secret = req?.headers["app_secret"];
-//   const token = req.query?.token;
-//   console.log("app_secret : ", app_secret);
-//   if (token != PAYPAL_TOKEN && app_secret != APP_ID)
-//     return createError(res, 401, "App is Unauthorized!");
-//   // const app_id = jwt.verify(app_secret, PRIVATE_KEY)
-//   // CODE SHOULD BE CONTINUED : ONLY APP_ID IS LEFT AND THEN JWT TOKEN CREATION IS TO BE DONE
-//   next();
-// });
-// we should have cors object specified here,
-
-app.use(function (req, res, next) {
-  console.log(req.originalUrl);
-  res.header("Access-Control-Allow-Credentials", true);
+// Middleware to handle CORS headers for all routes
+app.use((req, res, next) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://physio-experts.vercel.app"
+  ); // Frontend URL
+  res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, secretkey, token"
   );
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
+    return res.status(200).json({});
+  }
   next();
 });
 
-// socket io functionalities;
-
+// Socket.io setup with CORS
 const io = new Server(server, {
   cors: {
-    origin: "https://physio-experts.vercel.app", // Specify the allowed origin
-    methods: ["GET", "POST", "PATCH", "DELETE"], // Define allowed methods
-    credentials: true, // Allow credentials if necessary
-    allowedHeaders: ["Authorization", "Content-Type", "secretkey", "token"], // Add any necessary headers
+    origin: "https://physio-experts.vercel.app", // Frontend URL
+    methods: ["GET", "POST", "PATCH", "DELETE"], // Allowed methods
+    credentials: true, // Allow credentials
+    allowedHeaders: ["Authorization", "Content-Type", "secretkey", "token"], // Allowed headers
+    exposedHeaders: ["Access-Control-Allow-Origin"], // Exposed headers
   },
-}); // socket io server!
-// const io = require("socket.io").
+});
+
 app.io = io;
 app.set("io", io);
 global.io = io;
 
-function socketEmit(socket, event, data) {
-  socket.emit(event, data);
-}
+// Socket.io connection
 io.on("connection", (socket) => {
-  console.log("connection established!");
+  console.log("Connection established!");
+
   try {
     const { secretkey, token } = socket.handshake.headers;
     console.log("Received token:", token);
@@ -129,9 +122,8 @@ io.on("connection", (socket) => {
         console.log("===============Patient SOCKET JOINED==============");
         socket.join(["/patient-" + user.patientId._id]);
         break;
-
       default:
-        console.log("no other then company room joined!");
+        console.log("No other room joined!");
         socket.join(`/visitor`);
         break;
     }
@@ -141,6 +133,7 @@ io.on("connection", (socket) => {
   }
 });
 
+// API routes
 app.use("/api/auth", AuthRoutes);
 app.use("/api/doctor", DoctorRoutes);
 app.use("/api/patient", PatientRoutes);
@@ -155,13 +148,15 @@ app.use("/api/category", CategoryRoutes);
 app.use("/api/exercise", ExerciseRoutes);
 app.use("/api/stats", StatsRoutes);
 
+// 404 and error handling
 app.use("*", (req, res) => res.status(404).send("Not Found!"));
 app.use((req, res, error) => {
   console.log(error);
   res.status(400).json({ success: false, error });
 });
 
-server.listen(PORT, async (error) => {
+// Start server
+server.listen(PORT, (error) => {
   if (error) return console.log("SERVER_CONNECTION ERROR", error);
   console.log("Server connected on ", PORT);
 });
