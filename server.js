@@ -86,7 +86,7 @@ const io = new Server(server, {
     origin: "https://physio-experts.vercel.app", // Specify the allowed origin
     methods: ["GET", "POST", "PATCH", "DELETE"], // Define allowed methods
     credentials: true, // Allow credentials if necessary
-    allowedHeaders: ["Authorization", "Content-Type"], // Add any necessary headers
+    allowedHeaders: ["Authorization", "Content-Type", "secretkey", "token"], // Add any necessary headers
   },
 }); // socket io server!
 // const io = require("socket.io").
