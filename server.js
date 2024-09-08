@@ -83,7 +83,7 @@ app.use(function (req, res, next) {
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5177", // Specify the allowed origin
+    origin: "https://physio-experts.vercel.app", // Specify the allowed origin
     methods: ["GET", "POST", "PATCH", "DELETE"], // Define allowed methods
     credentials: true, // Allow credentials if necessary
   },
@@ -93,6 +93,9 @@ app.io = io;
 app.set("io", io);
 global.io = io;
 
+function socketEmit(socket, event, data) {
+  socket.emit(event, data);
+}
 io.on("connection", (socket) => {
   console.log("connection established!");
   try {
