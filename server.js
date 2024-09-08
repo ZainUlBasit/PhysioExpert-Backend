@@ -49,7 +49,7 @@ mongoose
 
 app.use(
   cors({
-    origin: true,
+    origin: "https://physio-experts.vercel.app",
     credentials: true,
   })
 );
