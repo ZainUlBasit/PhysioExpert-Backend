@@ -49,8 +49,13 @@ app.use(
   cors({
     origin: ["https://physio-experts.vercel.app"], // Frontend domain
     credentials: true, // Allow cookies and credentials
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
   })
 );
+
+// Handle preflight requests
+app.options("*", cors());
 
 // Log requests for debugging
 app.use((req, res, next) => {
@@ -69,6 +74,7 @@ const io = new Server(server, {
     origin: ["https://physio-experts.vercel.app"], // Frontend domain
     methods: ["GET", "POST"],
     credentials: true, // Allow credentials
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
     maxHttpBufferSize: 1e6, // Set buffer limit if needed
   },
 });
