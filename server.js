@@ -47,7 +47,7 @@ mongoose
 // CORS configuration for HTTP requests
 app.use(
   cors({
-    origin: ["https://physio-experts.vercel.app"], // Frontend domain
+    origin: ["http://localhost:5173"], // Frontend domain
     credentials: true, // Allow cookies and credentials
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
     allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
@@ -71,7 +71,7 @@ app.use((req, res, next) => {
 // Socket.io setup with CORS configuration
 const io = new Server(server, {
   cors: {
-    origin: ["https://physio-experts.vercel.app"], // Frontend domain
+    origin: ["http://localhost:5173"], // Frontend domain
     methods: ["GET", "POST"],
     credentials: true, // Allow credentials
     allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
